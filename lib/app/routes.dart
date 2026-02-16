@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/register_screen.dart';
 import '../screens/auth/role_select_screen.dart';
 import '../screens/student/student_home_screen.dart';
 import '../screens/student/timetable_screen.dart';
@@ -10,11 +11,13 @@ import '../screens/student/attendance_history_screen.dart';
 import '../screens/lecturer/lecturer_sessions_screen.dart';
 import '../screens/lecturer/live_attendance_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/notifications/notifications_screen.dart';
 
 /// Route name constants for easy reference
 class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
+  static const String register = '/register';
   static const String roleSelect = '/role-select';
 
   // Student routes
@@ -30,6 +33,7 @@ class AppRoutes {
 
   // Shared routes
   static const String profile = '/profile';
+  static const String notifications = '/notifications';
 
   /// Route map used by MaterialApp
   ///
@@ -41,6 +45,7 @@ class AppRoutes {
   static Map<String, WidgetBuilder> get routes => {
     splash: (_) => const SplashScreen(),
     login: (_) => const LoginScreen(),
+    register: (_) => const RegisterScreen(),
     roleSelect: (_) => const RoleSelectScreen(),
     studentHome: (_) => const StudentHomeScreen(),
     studentTimetable: (_) => const TimetableScreen(),
@@ -50,5 +55,6 @@ class AppRoutes {
     lecturerHome: (_) => const LecturerSessionsScreen(),
     liveAttendance: (_) => const LiveAttendanceScreen(),
     profile: (_) => const ProfileScreen(),
+    notifications: (_) => const NotificationsScreen(),
   };
 }

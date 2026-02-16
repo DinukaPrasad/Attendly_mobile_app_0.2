@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../app/user_session.dart';
 import '../../data/dummy_data.dart';
+import '../../repositories/auth_repository.dart';
 import '../../widgets/attendly_app_bar.dart';
 import '../../app/theme.dart';
 
@@ -8,7 +10,19 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = DummyData.currentStudent;
+    // Prefer real user from session; fall back to dummy data.
+    final sessionUser = UserSession.currentUser;
+    final fullName = sessionUser?.fullName ?? DummyData.currentStudent.fullName;
+    final email = sessionUser?.email ?? DummyData.currentStudent.email;
+    final studentNumber =
+        sessionUser?.studentNumber ?? DummyData.currentStudent.studentNumber;
+    final programme =
+        sessionUser?.programme ?? DummyData.currentStudent.programme;
+    final faculty = sessionUser?.faculty ?? DummyData.currentStudent.faculty;
+    final role = sessionUser?.role ?? DummyData.currentStudent.role;
+    final isTrustedDevice =
+        sessionUser?.isTrustedDevice ??
+        DummyData.currentStudent.isTrustedDevice;
 
     return Scaffold(
       appBar: const AttendlyAppBar(title: 'Profile'),
@@ -28,11 +42,7 @@ class ProfileScreen extends StatelessWidget {
                         alpha: 0.15,
                       ),
                       child: Text(
-                        user.fullName
-                            .split(' ')
-                            .map((n) => n[0])
-                            .take(2)
-                            .join(),
+                        fullName.split(' ').map((n) => n[0]).take(2).join(),
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -42,19 +52,16 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      user.fullName,
+                      fullName,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      user.email,
-                      style: TextStyle(color: Colors.grey.shade600),
-                    ),
+                    Text(email, style: TextStyle(color: Colors.grey.shade600)),
                     const SizedBox(height: 4),
                     Text(
-                      user.studentNumber,
+                      studentNumber,
                       style: TextStyle(
                         color: Colors.grey.shade500,
                         fontSize: 13,
@@ -83,18 +90,19 @@ class ProfileScreen extends StatelessWidget {
                     _ProfileRow(
                       icon: Icons.school,
                       label: 'Programme',
-                      value: user.programme,
+                      value: programme,
                     ),
                     _ProfileRow(
                       icon: Icons.business,
                       label: 'Faculty',
-                      value: user.faculty,
+                      value: faculty,
                     ),
                     _ProfileRow(
                       icon: Icons.badge,
                       label: 'Role',
-                      value:
-                          user.role[0].toUpperCase() + user.role.substring(1),
+                      value: role.isNotEmpty
+                          ? role[0].toUpperCase() + role.substring(1)
+                          : 'Unknown',
                     ),
                   ],
                 ),
@@ -122,7 +130,7 @@ class ProfileScreen extends StatelessWidget {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: user.isTrustedDevice
+                          color: isTrustedDevice
                               ? AttendlyTheme.successColor.withValues(
                                   alpha: 0.12,
                                 )
@@ -130,17 +138,17 @@ class ProfileScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
-                          user.isTrustedDevice
+                          isTrustedDevice
                               ? Icons.verified_user
                               : Icons.shield_outlined,
-                          color: user.isTrustedDevice
+                          color: isTrustedDevice
                               ? AttendlyTheme.successColor
                               : Colors.orange,
                         ),
                       ),
                       title: const Text('Trusted Device'),
                       subtitle: Text(
-                        user.isTrustedDevice
+                        isTrustedDevice
                             ? 'This device is registered and trusted'
                             : 'Device not yet verified',
                         style: const TextStyle(fontSize: 12),
@@ -151,7 +159,7 @@ class ProfileScreen extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: user.isTrustedDevice
+                          color: isTrustedDevice
                               ? AttendlyTheme.successColor.withValues(
                                   alpha: 0.15,
                                 )
@@ -159,11 +167,11 @@ class ProfileScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          user.isTrustedDevice ? 'Verified' : 'Pending',
+                          isTrustedDevice ? 'Verified' : 'Pending',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: user.isTrustedDevice
+                            color: isTrustedDevice
                                 ? AttendlyTheme.successColor
                                 : Colors.orange,
                           ),
@@ -230,7 +238,10 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {
+                onPressed: () async {
+                  await AuthRepository.logout();
+                  UserSession.clear();
+                  if (!context.mounted) return;
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     '/login',

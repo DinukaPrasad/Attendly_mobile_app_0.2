@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../app/user_session.dart';
 import '../../data/dummy_data.dart';
 import '../../widgets/attendly_card.dart';
+import '../../widgets/attendly_nav_bar.dart';
 import '../../widgets/status_chip.dart';
 
 class StudentHomeScreen extends StatelessWidget {
@@ -8,7 +10,13 @@ class StudentHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = DummyData.currentStudent;
+    // Prefer real user from session; fall back to dummy data.
+    final displayName = UserSession.isLoggedIn
+        ? UserSession.fullName
+        : DummyData.currentStudent.fullName;
+    final firstName = UserSession.isLoggedIn
+        ? UserSession.firstName
+        : DummyData.currentStudent.fullName.split(' ').first;
     final todaySessions = DummyData.sessions
         .where(
           (s) =>
@@ -34,7 +42,7 @@ class StudentHomeScreen extends StatelessWidget {
                       context,
                     ).colorScheme.primary.withValues(alpha: 0.15),
                     child: Text(
-                      user.fullName[0],
+                      displayName[0],
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
@@ -53,7 +61,7 @@ class StudentHomeScreen extends StatelessWidget {
                               ?.copyWith(color: Colors.grey.shade600),
                         ),
                         Text(
-                          user.fullName.split(' ').first,
+                          firstName,
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
@@ -62,7 +70,9 @@ class StudentHomeScreen extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/notifications');
+                    },
                   ),
                 ],
               ),
@@ -192,43 +202,11 @@ class StudentHomeScreen extends StatelessWidget {
                 ),
 
               const SizedBox(height: 24),
-
-              // Quick actions
-              Text(
-                'Quick Actions',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _QuickAction(
-                    icon: Icons.calendar_today,
-                    label: 'Timetable',
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/student-timetable'),
-                  ),
-                  const SizedBox(width: 12),
-                  _QuickAction(
-                    icon: Icons.history,
-                    label: 'History',
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/attendance-history'),
-                  ),
-                  const SizedBox(width: 12),
-                  _QuickAction(
-                    icon: Icons.person_outline,
-                    label: 'Profile',
-                    onTap: () => Navigator.pushNamed(context, '/profile'),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: AttendlyNavBar(
         currentIndex: 0,
         onTap: (index) {
           switch (index) {
@@ -244,57 +222,11 @@ class StudentHomeScreen extends StatelessWidget {
           }
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Timetable',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          NavBarItem(icon: Icons.home, label: 'Home'),
+          NavBarItem(icon: Icons.calendar_today, label: 'Timetable'),
+          NavBarItem(icon: Icons.history, label: 'History'),
+          NavBarItem(icon: Icons.person, label: 'Profile'),
         ],
-      ),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

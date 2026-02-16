@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../app/user_session.dart';
 import '../../data/dummy_data.dart';
+import '../../widgets/attendly_nav_bar.dart';
 import '../../widgets/status_chip.dart';
 
 class LecturerSessionsScreen extends StatefulWidget {
@@ -15,7 +17,10 @@ class _LecturerSessionsScreenState extends State<LecturerSessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = DummyData.currentLecturer;
+    // Prefer real user from session; fall back to dummy data.
+    final displayName = UserSession.isLoggedIn
+        ? UserSession.fullName
+        : DummyData.currentLecturer.fullName;
     final sessions = _selectedModule == 'All'
         ? DummyData.sessions
         : DummyData.sessions
@@ -38,7 +43,7 @@ class _LecturerSessionsScreenState extends State<LecturerSessionsScreen> {
                       context,
                     ).colorScheme.secondary.withValues(alpha: 0.15),
                     child: Text(
-                      user.fullName[0],
+                      displayName[0],
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
@@ -57,7 +62,7 @@ class _LecturerSessionsScreenState extends State<LecturerSessionsScreen> {
                               ?.copyWith(color: Colors.grey.shade600),
                         ),
                         Text(
-                          user.fullName,
+                          displayName,
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
@@ -221,7 +226,7 @@ class _LecturerSessionsScreenState extends State<LecturerSessionsScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: AttendlyNavBar(
         currentIndex: 0,
         onTap: (index) {
           if (index == 1) {
@@ -229,11 +234,8 @@ class _LecturerSessionsScreenState extends State<LecturerSessionsScreen> {
           }
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Sessions',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          NavBarItem(icon: Icons.dashboard, label: 'Sessions'),
+          NavBarItem(icon: Icons.person, label: 'Profile'),
         ],
       ),
     );

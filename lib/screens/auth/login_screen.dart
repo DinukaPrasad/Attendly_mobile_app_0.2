@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../app/routes.dart';
+import '../../app/user_session.dart';
+import '../../api/api_exception.dart';
+import '../../models/auth_models.dart';
+import '../../repositories/auth_repository.dart';
+import '../../repositories/user_repository.dart';
 import '../../widgets/attendly_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,12 +18,76 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  /// Attempts real login via [AuthRepository], then fetches the
+  /// user profile and navigates based on role.
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showError('Please enter both email and password.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 1. Call login endpoint — token is stored automatically.
+      final loginResponse = await AuthRepository.login(
+        LoginRequest(email: email, password: password),
+      );
+
+      // 2. Fetch the authenticated user's profile and cache it.
+      try {
+        final user = await UserRepository.fetchCurrentUser();
+        UserSession.setUser(user);
+      } catch (_) {
+        // Profile fetch failed — continue with role from login response.
+        // The home screen will show a fallback name.
+      }
+
+      final route = _routeForRole(loginResponse.role);
+
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, route);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showError(e.message);
+    } catch (e) {
+      if (!mounted) return;
+      _showError('An unexpected error occurred. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _routeForRole(String role) {
+    switch (role.trim().toUpperCase()) {
+      case 'STUDENT':
+        return AppRoutes.studentHome;
+      case 'LECTURER':
+        return AppRoutes.lecturerHome;
+      case 'ADMIN':
+        // Prototype fallback until an admin home screen is added.
+        return AppRoutes.roleSelect;
+      default:
+        throw ApiException('Unsupported role "$role". Please contact support.');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red.shade600),
+    );
   }
 
   @override
@@ -109,10 +179,8 @@ class _LoginScreenState extends State<LoginScreen> {
               // Login button
               AttendlyButton(
                 label: 'Login',
-                onPressed: () {
-                  // UI only — navigate to role select
-                  Navigator.pushReplacementNamed(context, '/role-select');
-                },
+                onPressed: _isLoading ? () {} : _handleLogin,
+                isLoading: _isLoading,
                 width: double.infinity,
               ),
               const SizedBox(height: 16),
@@ -127,7 +195,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 icon: Icons.play_arrow,
                 width: double.infinity,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+
+              // Register link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Don't have an account?",
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
+                    child: const Text('Register'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
