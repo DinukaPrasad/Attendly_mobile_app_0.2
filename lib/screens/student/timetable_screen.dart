@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/dummy_data.dart';
-import '../../widgets/attendly_app_bar.dart';
 import '../../widgets/status_chip.dart';
 
 class TimetableScreen extends StatefulWidget {
@@ -24,7 +23,6 @@ class _TimetableScreenState extends State<TimetableScreen> {
               .toList();
 
     return Scaffold(
-      appBar: const AttendlyAppBar(title: 'Timetable'),
       body: Column(
         children: [
           // Toggle

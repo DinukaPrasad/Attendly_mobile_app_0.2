@@ -1,106 +1,112 @@
+import 'package:attendly/models/session_models.dart';
+import 'package:attendly/repositories/session_repository.dart';
+import 'package:attendly/widgets/attendly_card.dart';
+import 'package:attendly/widgets/status_chip.dart';
 import 'package:flutter/material.dart';
-import '../../app/user_session.dart';
-import '../../data/dummy_data.dart';
-import '../../widgets/attendly_card.dart';
-import '../../widgets/attendly_nav_bar.dart';
-import '../../widgets/status_chip.dart';
 
-class StudentHomeScreen extends StatelessWidget {
+class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Prefer real user from session; fall back to dummy data.
-    final displayName = UserSession.isLoggedIn
-        ? UserSession.fullName
-        : DummyData.currentStudent.fullName;
-    final firstName = UserSession.isLoggedIn
-        ? UserSession.firstName
-        : DummyData.currentStudent.fullName.split(' ').first;
-    final todaySessions = DummyData.sessions
-        .where(
-          (s) =>
-              s.date.day == DateTime.now().day &&
-              s.date.month == DateTime.now().month &&
-              s.date.year == DateTime.now().year,
-        )
-        .toList();
+  State<StudentHomeScreen> createState() => _StudentHomeScreenState();
+}
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+class _StudentHomeScreenState extends State<StudentHomeScreen> {
+  late Future<List<ApiSession>> _todaySessionsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _todaySessionsFuture = _fetchTodaySessions();
+  }
+
+  Future<List<ApiSession>> _fetchTodaySessions() async {
+    final sessions = await SessionRepository.fetchMySessions();
+    final now = DateTime.now().toLocal();
+    return sessions.where((s) {
+      final d = s.date.toLocal();
+      return d.year == now.year && d.month == now.month && d.day == now.day;
+    }).toList();
+  }
+
+  void _retry() {
+    setState(() {
+      _todaySessionsFuture = _fetchTodaySessions();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Today's sessions header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Greeting
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.15),
-                    child: Text(
-                      displayName[0],
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+              Text(
+                "Today's Sessions",
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Handled via bottom nav
+                },
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Session cards
+          FutureBuilder<List<ApiSession>>(
+            future: _todaySessionsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return AttendlyCard(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Colors.red.shade300,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Failed to load sessions',
+                            style: TextStyle(color: Colors.grey.shade600),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: _retry,
+                            icon: const Icon(Icons.refresh, size: 18),
+                            label: const Text('Retry'),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Good Morning,',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey.shade600),
-                        ),
-                        Text(
-                          firstName,
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/notifications');
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                );
+              }
 
-              // Today's sessions header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Today's Sessions",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/student-timetable');
-                    },
-                    child: const Text('View All'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+              final todaySessions = snapshot.data ?? [];
 
-              // Session cards
-              if (todaySessions.isEmpty)
-                AttendlyCard(
+              if (todaySessions.isEmpty) {
+                return AttendlyCard(
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
@@ -120,112 +126,96 @@ class StudentHomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                )
-              else
-                ...todaySessions.map(
-                  (session) => AttendlyCard(
-                    onTap: () {
-                      Navigator.pushNamed(context, '/session-details');
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              session.moduleCode,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            StatusChip(label: session.status),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          session.moduleName,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${session.startTime} – ${session.endTime}',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.grey.shade600),
-                            ),
-                            const SizedBox(width: 16),
-                            Icon(
-                              Icons.location_on_outlined,
-                              size: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                session.venue,
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: Colors.grey.shade600),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (session.status == 'active') ...[
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/session-details',
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.check_circle_outline,
-                                size: 18,
-                              ),
-                              label: const Text('View Details'),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
+                );
+              }
 
-              const SizedBox(height: 24),
+              return Column(
+                children: todaySessions
+                    .map((session) => _SessionCard(session: session))
+                    .toList(),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _SessionCard extends StatelessWidget {
+  final ApiSession session;
+
+  const _SessionCard({required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    return AttendlyCard(
+      onTap: () {
+        Navigator.pushNamed(context, '/session-details');
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                session.moduleCode,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              StatusChip(label: session.status),
             ],
           ),
-        ),
-      ),
-      bottomNavigationBar: AttendlyNavBar(
-        currentIndex: 0,
-        onTap: (index) {
-          switch (index) {
-            case 1:
-              Navigator.pushNamed(context, '/student-timetable');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/attendance-history');
-              break;
-            case 3:
-              Navigator.pushNamed(context, '/profile');
-              break;
-          }
-        },
-        items: const [
-          NavBarItem(icon: Icons.home, label: 'Home'),
-          NavBarItem(icon: Icons.calendar_today, label: 'Timetable'),
-          NavBarItem(icon: Icons.history, label: 'History'),
-          NavBarItem(icon: Icons.person, label: 'Profile'),
+          const SizedBox(height: 4),
+          Text(
+            session.moduleName,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 4),
+              Text(
+                '${session.startTime} – ${session.endTime}',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+              ),
+              const SizedBox(width: 16),
+              Icon(
+                Icons.location_on_outlined,
+                size: 16,
+                color: Colors.grey.shade600,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  session.venue,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          if (session.status == 'active') ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/session-details');
+                },
+                icon: const Icon(Icons.check_circle_outline, size: 18),
+                label: const Text('Check In'),
+              ),
+            ),
+          ],
         ],
       ),
     );

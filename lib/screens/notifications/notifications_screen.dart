@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../widgets/attendly_app_bar.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -47,7 +46,6 @@ class NotificationsScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: const AttendlyAppBar(title: 'Notifications'),
       body: notifications.isEmpty
           ? Center(
               child: Padding(

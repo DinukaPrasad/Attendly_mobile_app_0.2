@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/dummy_data.dart';
-import '../../widgets/attendly_app_bar.dart';
 import '../../widgets/status_chip.dart';
 
 class AttendanceHistoryScreen extends StatefulWidget {
@@ -26,7 +25,6 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
               .toList();
 
     return Scaffold(
-      appBar: const AttendlyAppBar(title: 'Attendance History'),
       body: Column(
         children: [
           // Filter dropdown

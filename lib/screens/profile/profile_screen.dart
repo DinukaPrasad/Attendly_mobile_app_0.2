@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../app/user_session.dart';
 import '../../data/dummy_data.dart';
 import '../../repositories/auth_repository.dart';
-import '../../widgets/attendly_app_bar.dart';
 import '../../app/theme.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -25,7 +24,6 @@ class ProfileScreen extends StatelessWidget {
         DummyData.currentStudent.isTrustedDevice;
 
     return Scaffold(
-      appBar: const AttendlyAppBar(title: 'Profile'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

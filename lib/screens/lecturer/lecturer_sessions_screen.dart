@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../app/user_session.dart';
 import '../../data/dummy_data.dart';
-import '../../widgets/attendly_nav_bar.dart';
 import '../../widgets/status_chip.dart';
 
 class LecturerSessionsScreen extends StatefulWidget {
@@ -226,18 +225,18 @@ class _LecturerSessionsScreenState extends State<LecturerSessionsScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: AttendlyNavBar(
-        currentIndex: 0,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.pushNamed(context, '/profile');
-          }
-        },
-        items: const [
-          NavBarItem(icon: Icons.dashboard, label: 'Sessions'),
-          NavBarItem(icon: Icons.person, label: 'Profile'),
-        ],
-      ),
+      // bottomNavigationBar: AttendlyNavBar(
+      //   currentIndex: 0,
+      //   onTap: (index) {
+      //     if (index == 1) {
+      //       Navigator.pushNamed(context, '/profile');
+      //     }
+      //   },
+      //   items: const [
+      //     NavBarItem(icon: Icons.dashboard, label: 'Sessions'),
+      //     NavBarItem(icon: Icons.person, label: 'Profile'),
+      //   ],
+      // ),
     );
   }
 }

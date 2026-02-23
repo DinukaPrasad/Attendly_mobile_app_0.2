@@ -19,6 +19,7 @@ class ApiEndpoints {
   // ── Sessions ────────────────────────────────────────────────────
   static const String sessions = '$apiPrefix/sessions';
   static String sessionById(String id) => '$apiPrefix/sessions/$id';
+  static String sessionMe = '$apiPrefix/sessions/me';
 
   // ── Attendance ──────────────────────────────────────────────────
   static const String markAttendance = '$apiPrefix/attendance/mark';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../widgets/attendly_app_bar.dart';
 import '../../app/theme.dart';
 
 class CheckinWizardScreen extends StatefulWidget {
@@ -43,7 +42,6 @@ class _CheckinWizardScreenState extends State<CheckinWizardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AttendlyAppBar(title: 'Check-in'),
       body: Column(
         children: [
           // Progress indicator

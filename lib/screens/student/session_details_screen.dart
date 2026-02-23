@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/dummy_data.dart';
-import '../../widgets/attendly_app_bar.dart';
 import '../../widgets/attendly_button.dart';
 import '../../app/theme.dart';
 
@@ -16,7 +15,6 @@ class SessionDetailsScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: const AttendlyAppBar(title: 'Session Details'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

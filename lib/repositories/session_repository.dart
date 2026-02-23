@@ -57,4 +57,30 @@ class SessionRepository {
       throw ApiClient.handleError(e);
     }
   }
+
+  /// GET /api/v1/sessions/me
+  ///
+  /// Returns sessions relevant to the authenticated user (e.g. enrolled sessions for students).
+  static Future<List<ApiSession>> fetchMySessions() async {
+    try {
+      final response = await ApiClient.dio.get(ApiEndpoints.sessionMe);
+
+      final apiResponse = ApiResponse<List<ApiSession>>.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => (json as List)
+            .map((e) => ApiSession.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+      if (!apiResponse.success || apiResponse.data == null) {
+        throw ApiException(apiResponse.message);
+      }
+
+      return apiResponse.data!;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiClient.handleError(e);
+    }
+  }
 }

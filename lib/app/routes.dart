@@ -3,12 +3,12 @@ import '../screens/splash/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/role_select_screen.dart';
-import '../screens/student/student_home_screen.dart';
+import '../screens/student/student_dashboard_screen.dart';
 import '../screens/student/timetable_screen.dart';
 import '../screens/student/session_details_screen.dart';
 import '../screens/student/checkin_wizard_screen.dart';
 import '../screens/student/attendance_history_screen.dart';
-import '../screens/lecturer/lecturer_sessions_screen.dart';
+import '../screens/lecturer/lecturer_dashboard_screen.dart';
 import '../screens/lecturer/live_attendance_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
@@ -22,6 +22,7 @@ class AppRoutes {
 
   // Student routes
   static const String studentHome = '/student-home';
+  static const String studentDashboard = '/student-dashboard';
   static const String studentTimetable = '/student-timetable';
   static const String sessionDetails = '/session-details';
   static const String checkinWizard = '/checkin-wizard';
@@ -29,6 +30,7 @@ class AppRoutes {
 
   // Lecturer routes
   static const String lecturerHome = '/lecturer-home';
+  static const String lecturerDashboard = '/lecturer-dashboard';
   static const String liveAttendance = '/live-attendance';
 
   // Shared routes
@@ -47,12 +49,14 @@ class AppRoutes {
     login: (_) => const LoginScreen(),
     register: (_) => const RegisterScreen(),
     roleSelect: (_) => const RoleSelectScreen(),
-    studentHome: (_) => const StudentHomeScreen(),
+    studentHome: (_) => const StudentDashboardScreen(),
+    studentDashboard: (_) => const StudentDashboardScreen(),
     studentTimetable: (_) => const TimetableScreen(),
     sessionDetails: (_) => const SessionDetailsScreen(),
     checkinWizard: (_) => const CheckinWizardScreen(),
     attendanceHistory: (_) => const AttendanceHistoryScreen(),
-    lecturerHome: (_) => const LecturerSessionsScreen(),
+    lecturerHome: (_) => const LecturerDashboardScreen(),
+    lecturerDashboard: (_) => const LecturerDashboardScreen(),
     liveAttendance: (_) => const LiveAttendanceScreen(),
     profile: (_) => const ProfileScreen(),
     notifications: (_) => const NotificationsScreen(),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/dummy_data.dart';
-import '../../widgets/attendly_app_bar.dart';
 import '../../widgets/status_chip.dart';
 
 class LiveAttendanceScreen extends StatefulWidget {
@@ -22,7 +21,7 @@ class _LiveAttendanceScreenState extends State<LiveAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final session = DummyData.sessions.firstWhere(
+    DummyData.sessions.firstWhere(
       (s) => s.status == 'active',
       orElse: () => DummyData.sessions.first,
     );
@@ -46,21 +45,6 @@ class _LiveAttendanceScreenState extends State<LiveAttendanceScreen> {
         .length;
 
     return Scaffold(
-      appBar: AttendlyAppBar(
-        title: '${session.moduleCode} – Live',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Export not implemented in prototype'),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: Column(
         children: [
           // Summary counters
