@@ -24,4 +24,7 @@ class ApiEndpoints {
   // ── Attendance ──────────────────────────────────────────────────
   static const String markAttendance = '$apiPrefix/attendance/mark';
   static const String myAttendance = '$apiPrefix/students/me/attendance';
+
+  //notifications
+  static const String notifications = '$apiPrefix/notifications/me';
 }
